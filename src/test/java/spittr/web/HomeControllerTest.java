@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
@@ -26,7 +27,7 @@ public class HomeControllerTest {
     @Test
     public void testHomePage() throws Exception {
         HomeController controller = new HomeController();
-        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+        MockMvc mockMvc = standaloneSetup(controller).build();
         mockMvc.perform(get("/")).andExpect(view().name("home"));
     }
 
@@ -37,7 +38,7 @@ public class HomeControllerTest {
         when(mockRepository.findSpittles(Long.MAX_VALUE, 20)).thenReturn(excpectedSpittles);
 
         SpittleController controller = new SpittleController(mockRepository);
-        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(controller).setSingleView(
+        MockMvc mockMvc = standaloneSetup(controller).setSingleView(
                 new InternalResourceView("/WEB-INF/views/spittles.jsp")).build();
         mockMvc.perform(get("/spittles"))
                 .andExpect(view().name("spittles"))
@@ -52,5 +53,25 @@ public class HomeControllerTest {
         }
 
         return spittles;
+    }
+
+    @Test
+    public void shouldShowPagesSpittles() throws Exception {
+        List<Spittle> expectedSpittles = createSpittleList(50);
+        SpittleRepository mockRepository = mock(SpittleRepository.class);
+        when(mockRepository.findSpittles(238900, 50))
+                .thenReturn(expectedSpittles);
+
+        SpittleController controller = new SpittleController(mockRepository);
+        MockMvc mockMvc = standaloneSetup(controller).setSingleView(
+                new InternalResourceView("/WEB-INF/views/spittles.jsp")).build();
+
+        mockMvc.perform(get("/spittles?max=238900&count=50"))
+                .andExpect(view().name("spittles"))
+                .andExpect(model().attributeExists("spittleList"))
+                .andExpect(model().attribute("spittleList", hasItems(expectedSpittles.toArray())));
+
+
+
     }
 }
