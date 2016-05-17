@@ -1,7 +1,6 @@
 package spittr.web;
 
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -9,11 +8,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.servlet.view.InternalResourceView;
 import spittr.Spittle;
 import spittr.data.SpittleRepository;
@@ -35,12 +31,12 @@ public class HomeControllerTest {
     public void shouldShowRecentSpittles() throws Exception {
         List<Spittle> excpectedSpittles = createSpittleList(20);
         SpittleRepository mockRepository = mock(SpittleRepository.class);
-        when(mockRepository.findSpittles(Long.MAX_VALUE, 20)).thenReturn(excpectedSpittles);
+        when(mockRepository.findSpittles(99999, 20)).thenReturn(excpectedSpittles);
 
         SpittleController controller = new SpittleController(mockRepository);
         MockMvc mockMvc = standaloneSetup(controller).setSingleView(
                 new InternalResourceView("/WEB-INF/views/spittles.jsp")).build();
-        mockMvc.perform(get("/spittles"))
+                mockMvc.perform(get("/spittles"))
                 .andExpect(view().name("spittles"))
                 .andExpect(model().attributeExists("spittleList"))
                 .andExpect(model().attribute("spittleList", hasItems(excpectedSpittles.toArray())));
@@ -56,7 +52,7 @@ public class HomeControllerTest {
     }
 
     @Test
-    public void shouldShowPagesSpittles() throws Exception {
+    public void shouldShowPagedSpittles() throws Exception {
         List<Spittle> expectedSpittles = createSpittleList(50);
         SpittleRepository mockRepository = mock(SpittleRepository.class);
         when(mockRepository.findSpittles(238900, 50))
@@ -70,8 +66,5 @@ public class HomeControllerTest {
                 .andExpect(view().name("spittles"))
                 .andExpect(model().attributeExists("spittleList"))
                 .andExpect(model().attribute("spittleList", hasItems(expectedSpittles.toArray())));
-
-
-
     }
 }
